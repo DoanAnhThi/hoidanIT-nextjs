@@ -16,14 +16,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
  
         // logic to salt and hash password
         // call backend
-        user = {
-          _id: '123',
-          username: '123',
-          email: '123',
-          isVerify: '123',
-          type: '123',
-          role: '123',
-        }
+        // user = {
+        //   _id: '123',
+        //   username: '123',
+        //   email: '123',
+        //   isVerify: '123',
+        //   type: '123',
+        //   role: '123',
+        // }
  
         if (!user) {
           // No user found, so this is their first attempt to login
@@ -32,7 +32,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
  
         // return user object with their profile data
+        console.log(">>> check user:", user)
         return user
+        
       },
     }),
   ],
