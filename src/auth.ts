@@ -10,7 +10,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
       // e.g. domain, username, password, 2FA token, etc.
       credentials: {
-        email: {},
+        username: {},
         password: {},
       },
       authorize: async (credentials) => {
@@ -18,14 +18,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           method: "POST",
           url: "http://localhost:8080/api/AnhThi1/auth/login",
           body: {
-            username: credentials.email,
+            username: credentials.username,
             password: credentials.password,
           }
       })
 
       console.log (">>> check res", res)
       // login thành công
-      if (!res.statusCode){
+      if (res.statusCode === 201){
         return {
           _id: res.data?.user?._id,
           name: res.data?.user?.name,
@@ -44,7 +44,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
  
         // return user object with their profile data
-        return res.data
       },
     }),
   ],
@@ -62,6 +61,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session({ session, token }) {
       (session.user as IUser) = token.user;
       return session
+    },
+    authorized: async ({ auth }) => {
+      // Logged in users are authenticated,
+      // otherwise redirect to login page
+      return !!auth
     },
   },
 })
