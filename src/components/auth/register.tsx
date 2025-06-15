@@ -3,11 +3,30 @@ import React from 'react';
 import { Button, Col, Divider, Form, Input, notification, Row } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import { sendRequest } from '@/utils/api';
+import { useRouter } from 'next/navigation';
+
 
 const Register = () => {
+    const router = useRouter();
 
     const onFinish = async (values: any) => {
-
+        const { email, password, name } = values;
+        const res = await sendRequest<IBackendRes<any>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/AnhThi1/auth/register`,
+            method: "POST",
+            body: {
+                email, password, name
+            }
+        })
+        if(res?.data){
+            router.push(`/verify/${res?.data?._id}`);
+        }else{
+            notification.error({
+                message: "Đăng ký thất bại",
+                description: res?.message || "Không rõ lý do thất bại"
+            })
+        }
     };
 
     return (
@@ -32,7 +51,11 @@ const Register = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please input your email!',
+                                    message: 'Vui lòng nhập email!',
+                                },
+                                {
+                                    type: 'email',
+                                    message: 'Định dạng email không hợp lệ!',
                                 },
                             ]}
                         >
@@ -45,7 +68,7 @@ const Register = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please input your password!',
+                                    message: 'Vui lòng nhập mật khẩu!',
                                 },
                             ]}
                         >
@@ -62,7 +85,7 @@ const Register = () => {
                         <Form.Item
                         >
                             <Button type="primary" htmlType="submit">
-                                Submit
+                                Đăng ký
                             </Button>
                         </Form.Item>
                     </Form>
@@ -71,11 +94,9 @@ const Register = () => {
                     <div style={{ textAlign: "center" }}>
                         Đã có tài khoản? <Link href={"/auth/login"}>Đăng nhập</Link>
                     </div>
-
                 </fieldset>
             </Col>
         </Row>
-
     )
 }
 
