@@ -6,26 +6,33 @@ import { signIn } from 'next-auth/react';
 import { error } from 'console';
 import { authenticate } from '@/utils/actions';
 import { useRouter } from 'next/navigation';
+import ModalReactive from './modal.reactive';
+import { useState } from 'react';
 
 
 const Login = () => {
     const router = useRouter();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [userEmail, setUserEmail] = useState("");    
 
     const onFinish = async (values: any) => {
-        console.log(">>> check values:", values)
         const {username, password} = values;
+        setUserEmail("");
         //trigger signin
         const res = await authenticate(username, password);
 
         if(res?.error ){
             //error
+            if(res?.code === 2){
+                setIsModalOpen(true);
+                setUserEmail(username);
+                return;         
+            }
             notification.error({
                 message: "Đăng nhập thất bại",
                 description: res.error,
             })
-            if(res?.code === 2){
-                router.push('/verify');
-            }
+
         }else {
             //redirect to dashboard
             router.push("/dashboard");
@@ -34,6 +41,7 @@ const Login = () => {
     };
 
     return (
+        <>  
         <Row justify={"center"} style={{ marginTop: "30px" }}>
             <Col xs={24} md={16} lg={8}>
                 <fieldset style={{
@@ -92,6 +100,12 @@ const Login = () => {
                 </fieldset>
             </Col>
         </Row>
+        <ModalReactive
+        isModalOpen = {isModalOpen}
+        setIsModalOpen = {setIsModalOpen}
+        userEmail = {userEmail}
+        />
+        </>
     )
 }
 
