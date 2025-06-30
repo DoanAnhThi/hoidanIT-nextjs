@@ -1,63 +1,70 @@
 'use client'
 
 import { useHasMounted } from "@/utils/customHook";
-import { Button, Form, Input, Modal, notification } from "antd";
-import { useState } from "react";
-import React from 'react';
-import { LoadingOutlined, SmileOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
-import { Steps } from 'antd';
+import { Button, Form, Input, Modal, notification, Steps } from "antd";
+import { SmileOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
+import { useEffect, useState } from "react";
 import { sendRequest } from "@/utils/api";
-
 
 const ModalReactive = (props: any) => {
     const { isModalOpen, setIsModalOpen, userEmail } = props;
     const [current, setCurrent] = useState(0);
-    const [userID, setuserID] = useState("");
+    const [form] = Form.useForm();
+    const [userId, setUserId] = useState("");
+
     const hasMounted = useHasMounted();
+
+
+    useEffect(() => {
+        if (userEmail) {
+            form.setFieldValue("email", userEmail)
+        }
+    }, [userEmail]);
+
     if (!hasMounted) return <></>;
 
     const onFinishStep0 = async (values: any) => {
         const { email } = values;
         const res = await sendRequest<IBackendRes<any>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/AnhThi1/auth/retry-active`,
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/retry-active`,
             method: "POST",
             body: {
                 email
             }
         })
+
         if (res?.data) {
-            setuserID(res?.data?._id);
+            setUserId(res?.data?._id)
             setCurrent(1);
         } else {
             notification.error({
-                message: "Gọi API thất bại",
+                message: "Call APIs error",
                 description: res?.message
             })
         }
 
-    };
+    }
 
     const onFinishStep1 = async (values: any) => {
         const { code } = values;
         const res = await sendRequest<IBackendRes<any>>({
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/AnhThi1/auth/check-code`,
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check-code`,
             method: "POST",
             body: {
-                code, _id: userID
+                code, _id: userId
             }
         })
+
         if (res?.data) {
-            setuserID(res?.data?._id);
             setCurrent(2);
         } else {
             notification.error({
-                message: "Gọi API thất bại",
+                message: "Call APIs error",
                 description: res?.message
             })
         }
 
-    };
-
+    }
     return (
         <>
             <Modal
@@ -67,6 +74,8 @@ const ModalReactive = (props: any) => {
                 onCancel={() => setIsModalOpen(false)}
                 maskClosable={false}
                 footer={null}
+
+
             >
                 <Steps
                     current={current}
@@ -81,6 +90,7 @@ const ModalReactive = (props: any) => {
                             // status: 'finish',
                             icon: <SolutionOutlined />,
                         },
+
                         {
                             title: 'Done',
                             // status: 'wait',
@@ -90,23 +100,23 @@ const ModalReactive = (props: any) => {
                 />
                 {current === 0 &&
                     <>
-                        <div style={{ margin: '20px 0' }}>
-                            <p>Tài khoản của bạn chưa được kích hoạt.</p>
+
+                        <div style={{ margin: "20px 0" }}>
+                            <p>Tải khoản của bạn chưa được kích hoạt</p>
                         </div>
                         <Form
-                            name="basic"
+                            name="verify"
                             onFinish={onFinishStep0}
                             autoComplete="off"
                             layout='vertical'
+                            form={form}
                         >
                             <Form.Item
                                 label=""
                                 name="email"
-                                initialValue={userEmail}
                             >
-                                <Input disabled />
+                                <Input disabled value={userEmail} />
                             </Form.Item>
-
                             <Form.Item
                             >
                                 <Button type="primary" htmlType="submit">
@@ -116,16 +126,19 @@ const ModalReactive = (props: any) => {
                         </Form>
                     </>
                 }
+
                 {current === 1 &&
                     <>
-                        <div style={{ margin: '20px 0' }}>
-                            <p>Vui lòng nhập mã xác nhận.</p>
+                        <div style={{ margin: "20px 0" }}>
+                            <p>Vui lòng nhập mã xác nhận</p>
                         </div>
+
                         <Form
-                            name="basic"
+                            name="verify2"
                             onFinish={onFinishStep1}
                             autoComplete="off"
                             layout='vertical'
+
                         >
                             <Form.Item
                                 label="Code"
@@ -133,13 +146,12 @@ const ModalReactive = (props: any) => {
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Vui lòng nhập mã xác thực',
+                                        message: 'Please input your code!',
                                     },
                                 ]}
                             >
                                 <Input />
                             </Form.Item>
-
                             <Form.Item
                             >
                                 <Button type="primary" htmlType="submit">
@@ -148,16 +160,16 @@ const ModalReactive = (props: any) => {
                             </Form.Item>
                         </Form>
                     </>
-
                 }
-                {current === 2 &&
-                    <div style={{ margin: '20px 0' }}>
-                        <p>Tài khoản của bạn đã được kích hoạt thành công</p>
-                    </div>
 
+                {current === 2 &&
+                    <div style={{ margin: "20px 0" }}>
+                        <p>Tải khoản của bạn đã được kích hoạt thành công. Vui lòng đăng nhập lại</p>
+                    </div>
                 }
             </Modal>
         </>
-    );
+    )
 }
+
 export default ModalReactive;
